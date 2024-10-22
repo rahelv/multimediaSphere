@@ -10,17 +10,25 @@ import RealityKit
 import RealityKitContent
 
 struct ImmersiveView: View {
+    
+//    @StateObject var model = SphereModel()
+    
+    private var contentEntity = Entity()
+    private var location: CGPoint = .zero
+    private var location3D: Point3D = .zero
 
     var body: some View {
         RealityView { content in
-            // Add the initial RealityKit content
-            if let immersiveContentEntity = try? await Entity(named: "Immersive", in: realityKitContentBundle) {
-                content.add(immersiveContentEntity)
-
-                // Put skybox here.  See example in World project available at
-                // https://developer.apple.com/
-            }
+//            content.add(model.setupContentEntity())
+//            model.addCube()
         }
+        .gesture(
+            SpatialTapGesture()
+                .targetedToAnyEntity()
+                .onEnded { value in
+                    print(value)
+                }
+        )
     }
 }
 

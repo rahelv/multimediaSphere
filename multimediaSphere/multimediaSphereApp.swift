@@ -14,7 +14,8 @@ struct multimediaSphereApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+//            ContentView()
+            TerrainFaceView()
                 .environment(appModel)
         }
         .windowStyle(.volumetric)
