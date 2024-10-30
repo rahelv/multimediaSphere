@@ -58,13 +58,9 @@ struct TerrainFaceView: View {
         let axisB: SIMD3<Float> = simd_cross(localUp, axisA) //senkrecht auf localUp and axisA
         
         var vertexPositions = [SIMD3<Float>](repeating: .zero, count: resolution * resolution)//vertex for each "edge" on the sphere
-
-        var verticesWithDuplicates = [SIMD3<Float>]() //vertex for each "edge" on the sphere
-        var quads = [UInt32]() //faces
+        var vertexIndices = [UInt32]()
         var textureCoordinates = [SIMD2<Float>]() //texture coordinates corresponding to faces
         
-        var vertex_index = 0
-
         for y in 0..<resolution { //row
             for x in 0..<resolution { //column
                 let i = x + y * resolution //index to store 2d array in linear order. row-major order
@@ -81,45 +77,31 @@ struct TerrainFaceView: View {
 //                addSphere(position: pointOnUnitCube, color: .blue)
                 
                 let pointOnUnitSphere = simd_normalize(pointOnUnitCube)
-                addSphere(position: pointOnUnitSphere, color: .red)
+//                addSphere(position: pointOnUnitSphere, color: .red)
                 
                 vertexPositions[i] = pointOnUnitSphere
 //                vertexPositions[i] = pointOnUnitCube
-            }
-        }
-        
-        for y in 0..<resolution { //row
-            for x in 0..<resolution { //column
-                let i = x + y * resolution //index to store 2d array in linear order. row-major order
+                
                 guard (x != resolution - 1 && y != resolution - 1) else { continue }
  //                if (x == 0 && y == 0) {
                 //first add new vertices (with duplicates)
-                //TODO: there has to be a much more efficient way ...
-                verticesWithDuplicates.append(vertexPositions[i])
-                verticesWithDuplicates.append(vertexPositions[i + 1])
-                verticesWithDuplicates.append(vertexPositions[i + resolution + 1])
-                verticesWithDuplicates.append(vertexPositions[i + resolution])
+                vertexIndices.append(UInt32(i))
+                vertexIndices.append(UInt32(i + 1))
+                vertexIndices.append(UInt32(i + resolution + 1))
+                vertexIndices.append(UInt32(i + resolution))
                 
-                //then add faces
-                quads.append(UInt32(vertex_index))
-                quads.append(UInt32(vertex_index + 1))
-                quads.append(UInt32(vertex_index + 2))
-                quads.append(UInt32(vertex_index + 3))
-                
-                vertex_index += 4
-
                 textureCoordinates.append([0, 0])
                 textureCoordinates.append([1, 0])
                 textureCoordinates.append([1, 1])
                 textureCoordinates.append([0, 1])
-//              print("textureCoords \(textureCoordinates)")
-//                }
             }
         }
-
+        var quads = [UInt32](0..<UInt32(vertexIndices.count))
+        var orderedVertexPositions: [SIMD3<Float>] = vertexIndices.map { vertexPositions[Int($0)] }
+            
         let size = (resolution - 1) * (resolution - 1)
         var descriptor = MeshDescriptor(name: "face")
-        descriptor.positions = MeshBuffers.Positions(verticesWithDuplicates)
+        descriptor.positions = MeshBuffers.Positions(orderedVertexPositions)
         descriptor.primitives = .polygons(Array(repeating: 4, count: size), quads) //TODO: ist das sinnvoll? (triangles and quads maybe??)
         descriptor.textureCoordinates = MeshBuffer.init(textureCoordinates)
         let materialsArray: [UInt32] = Array(0..<size).map { UInt32($0) } //TODO
@@ -127,6 +109,7 @@ struct TerrainFaceView: View {
         return descriptor
     }
     
+    //TODO: load materials from web 
     func generateMaterials() -> [SimpleMaterial] {
 //        var textures: [TextureResource] = [] //TODO: why differentiate between materials and textures?
         var materials: [SimpleMaterial] = []
