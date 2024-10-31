@@ -13,7 +13,7 @@ struct SphereFace {
         let axisA: SIMD3<Float> = SIMD3<Float>(localUp.y, localUp.z, localUp.x) //cyclic permutation (rechtwinklig zu localUp)
         let axisB: SIMD3<Float> = simd_cross(localUp, axisA) //senkrecht auf localUp and axisA
         
-        var vertexPositions = [SIMD3<Float>](repeating: .zero, count: resolution * resolution)//vertex for each "edge" on the sphere
+        var vertexPositions = [SIMD3<Float>](repeating: .zero, count: resolution * resolution) //vertex for each "edge" on the sphere
         var vertexIndices = [UInt32]()
         var textureCoordinates = [SIMD2<Float>]() //texture coordinates corresponding to faces
         

@@ -7,6 +7,7 @@
 
 import RealityFoundation
 import RealityKit
+import RealityKitContent
 
 @MainActor
 class SphereEntity: Entity {
@@ -25,12 +26,10 @@ class SphereEntity: Entity {
     
     private func initialize() async throws {
         let meshResource = try await self.createMeshResource(resolution: self.resolution)
-        let materials = ImageMaterialGenerator.generateMaterials() //TODO: don't repeat materials ...
-        let materialsArray = Array(repeating: materials, count: 6).flatMap {$0}
-        let modelEntity = ModelEntity(mesh: meshResource, materials: materialsArray)
+        let materials = ImageMaterialGenerator.generateMaterials(count: pow(Double(resolution - 1), 2) * 6)
+        let modelEntity = ModelEntity(mesh: meshResource, materials: materials)
+//        self.addGestures()
         self.addChild(modelEntity)
-        
-        //TODO: position? 
     }
     
     private func createMeshResource(resolution: Int) async throws -> MeshResource {
@@ -44,7 +43,22 @@ class SphereEntity: Entity {
         ]
         
         let meshDescriptors = directions.map({ SphereFace.constructSphereFaceMesh(resolution: resolution, localUp: $0) })
-        print(meshDescriptors[0])
-        return try await MeshResource(from: meshDescriptors)
+        return try await MeshResource(from: meshDescriptors) //TODO: materials are not applied correctly
+    }
+    
+    func addGestures() {
+        // Enable the entity for input.
+        self.components.set(InputTargetComponent())
+        
+        // Create a collision component with an empty group and mask. https://developer.apple.com/documentation/realitykit/inputtargetcomponent
+        var collision = CollisionComponent(shapes: [.generateSphere(radius: 0.4)])
+        collision.filter = CollisionFilter(group: [], mask: [])
+        self.components.set(collision)
+        
+        var component = GestureComponent()
+        component.canDrag = true
+        component.canScale = false
+        component.canRotate = true
+        self.components.set(component)
     }
 }

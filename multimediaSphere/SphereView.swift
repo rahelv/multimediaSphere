@@ -18,13 +18,16 @@ struct SphereView: View {
             root.scale = .init(x: 0.4, y: 0.4, z: 0.4) //TODO: enlarge (Volume Size)
             
             do {
-                let sphereEntity = try await SphereEntity(resolution: 20)
+                let sphereEntity = try await SphereEntity(resolution: 10)
+                sphereEntity.addGestures()
                 root.addChild(sphereEntity)
             } catch {
                 print("Failed to create SphereEntity: \(error)")
             }
+            
             content.add(root)
         }
+        .installGestures()
     }
 }
 
