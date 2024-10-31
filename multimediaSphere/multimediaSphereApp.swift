@@ -9,12 +9,12 @@ import SwiftUI
 
 @main
 struct multimediaSphereApp: App {
-
+    
     @State private var appModel = AppModel()
 
     var body: some Scene {
         WindowGroup {
-            TerrainFaceView()
+            SphereView()
                 .environment(appModel)
         }
         .windowStyle(.volumetric)

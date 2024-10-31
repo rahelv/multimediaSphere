@@ -9,10 +9,6 @@ import Foundation
 import RealityFoundation
 
 struct SphereFace {
-    
-    //TODO: -- build sphere entity from sphere faces
-    //TODO: -- add all faces and then return
-    
         static func constructSphereFaceMesh(resolution: Int, localUp: SIMD3<Float>) -> MeshDescriptor {
         let axisA: SIMD3<Float> = SIMD3<Float>(localUp.y, localUp.z, localUp.x) //cyclic permutation (rechtwinklig zu localUp)
         let axisB: SIMD3<Float> = simd_cross(localUp, axisA) //senkrecht auf localUp and axisA
