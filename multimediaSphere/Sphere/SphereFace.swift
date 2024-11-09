@@ -49,8 +49,7 @@ struct SphereFace {
                             vertexPositions[i + resolution]
                         ]
                         do {
-                            
-                            let meshDescriptor: MeshDescriptor = createSingleFaceMesh(vertexPositions: edges, name: "face\(x)\(y)")
+                            let meshDescriptor: MeshDescriptor = createSingleFaceMesh(vertexPositions: edges, name: "face\(x)\(y)", localUp: localUp)
                             let meshResource = try await MeshResource.generate(from: [meshDescriptor]) //TODO: why using array
                             meshResources.append(meshResource)
                         } catch {
@@ -62,16 +61,34 @@ struct SphereFace {
         return meshResources
     }
     
-    static func createSingleFaceMesh(vertexPositions: [SIMD3<Float>], name: String) -> MeshDescriptor {
-        //check that vertexPositions has 4 edges
-//        if vertexPositions.count != 4 { return nil }
+    static func createSingleFaceMesh(vertexPositions: [SIMD3<Float>], name: String, localUp: SIMD3<Float> ) -> MeshDescriptor {
         var textureCoordinates = [SIMD2<Float>]() //texture coordinates for a single face
+       
+        //for orientation
+        switch localUp {
+        case _ where abs(localUp.x) == 1 : //left and right 
+            textureCoordinates.append([1, 1])
+            textureCoordinates.append([0, 1])
+            textureCoordinates.append([0, 0])
+            textureCoordinates.append([1, 0])
+        case _ where abs(localUp.y) == 1 : //up and down
+            textureCoordinates.append([0, 0])
+            textureCoordinates.append([1, 0])
+            textureCoordinates.append([1, 1])
+            textureCoordinates.append([0, 1])
+        case _ where abs(localUp.z) == 1 : //forward and back
+            textureCoordinates.append([0, 0])
+            textureCoordinates.append([0, 1])
+            textureCoordinates.append([1, 1])
+            textureCoordinates.append([1, 0])
+        default: //TODO: what default case?
+            print("default")
+            textureCoordinates.append([0, 0])
+            textureCoordinates.append([1, 0])
+            textureCoordinates.append([1, 1])
+            textureCoordinates.append([0, 1])
+        }
 
-        textureCoordinates.append([0, 0])
-        textureCoordinates.append([1, 0])
-        textureCoordinates.append([1, 1])
-        textureCoordinates.append([0, 1])
-        
         var descriptor = MeshDescriptor(name: name)
         descriptor.positions = MeshBuffers.Positions(vertexPositions)
         descriptor.primitives = .polygons([4], [0, 1, 2, 3])
