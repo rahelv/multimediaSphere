@@ -18,9 +18,9 @@ struct SphereView: View {
             root.scale = .init(x: 0.4, y: 0.4, z: 0.4) //TODO: enlarge (Volume Size)
             
             do {
-                let sphereEntity = try await SphereEntity(resolution: 9)
+                let sphereEntity = try await SphereEntity(resolution: 9) //TODO: change resolution 
                 await sphereEntity.addHoverToChildEntities() //has to be called here!
-//                sphereEntity.addGestures()
+                sphereEntity.addGestures() //TODO: test
                 root.addChild(sphereEntity)
             } catch {
                 print("Failed to create SphereEntity: \(error)")

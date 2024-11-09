@@ -8,6 +8,7 @@
 import RealityFoundation
 import RealityKit
 import RealityKitContent
+import Foundation
 
 @MainActor
 class SphereEntity: Entity {
@@ -15,7 +16,7 @@ class SphereEntity: Entity {
     let vertexPositions = VertexPositions.shared
     var sphereImageEntities: [ImageEntity] = [] //entity for each image on the sphere
 
-    init(resolution: Int = 9) async throws {
+    init(resolution: Int = 9) async throws { //TODO: change resolution 
         self.resolution = resolution
         super.init()
         try await self.initialize()
@@ -26,13 +27,8 @@ class SphereEntity: Entity {
     }
     
     private func initialize() async throws {
-        try await self.generateSphereImageEntities(resolution: 9)
-//        let materials = ImageMaterialGenerator.generateMaterials(count: pow(Double(resolution - 1), 2) * 6)
-//        var materialIndex = 0;
-//        for resource in meshResources {
-//            //TODO: procedural texture
-//            materialIndex+=1
-//        }
+        try await self.generateSphereImageEntities(resolution: self.resolution)
+        self.updateTextures(count: pow(Double(resolution - 1), 2) * 6)
     }
     
     // creates array of meshresources containing mesh for every face of the sphere
@@ -73,5 +69,34 @@ class SphereEntity: Entity {
         component.canScale = false
         component.canRotate = true
         self.components.set(component)
+    }
+    
+    func updateTextures(count: Double) {
+        let imageGenerator = ImageMaterialGenerator()
+        let baseURL = "https://v3c.xreco-retrieval.ch/v3c/thumbnails/"
+        var randomFolder = imageGenerator.generateRandomFolder()
+        var imageCount = imageGenerator.countImagesInDirectory(url: URL(string: baseURL + randomFolder + "/")!)
+        
+        // Loop to load textures dynamically
+        var counter: Int = 1
+        for entity in sphereImageEntities {
+            if (counter > imageCount) {
+                //get new random folder
+                randomFolder = imageGenerator.generateRandomFolder()
+                imageCount = imageGenerator.countImagesInDirectory(url: URL(string: baseURL + randomFolder + "/")!)
+                counter = 1
+            }
+            let textureURL = URL(string: baseURL + randomFolder + "/" + randomFolder + String(format: "_%d.jpg", counter))
+            counter+=1
+            //TODO: what if theres not enough pictures in chosen folder?? catch error message
+            imageGenerator.createMaterialAsync(textureURL!) { material in
+                if let material = material {
+                    //change texture of entity
+                    entity.updateTexture(material: material)
+                } else {
+                    print("Failed to load texture.")
+                }
+            }
+        }
     }
 }

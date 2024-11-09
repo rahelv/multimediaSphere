@@ -15,7 +15,7 @@ class VertexPositions {
            // setup code
            return instance
        }()
-    var resolution: Int = 9
+    var resolution: Int = 9 //TODO: change resolution
     var vertexPositions: [[SIMD3<Float>]] = [] //vertexPositions for all 6 faces
     var edges: [[[SIMD3<Float>]]] = [] //the vertices of all quads
 
@@ -28,7 +28,7 @@ class VertexPositions {
         SIMD3<Float>(0, 0, -1)   // back
     ]
     
-    private init(resolution: Int = 9) { //TODO: resolution as parameter
+    private init(resolution: Int = 9) { //TODO: change resolution 
         var i: Int = 0; //to know which direction
         for direction in directions {
             let verticesOfFace = self.calculateVerticesForSphereFace(localUp: direction)

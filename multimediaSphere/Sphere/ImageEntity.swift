@@ -9,6 +9,7 @@ import Foundation
 import RealityFoundation
 
 class ImageEntity: Entity {
+    var modelEntity: ModelEntity?
     var meshResource: MeshResource?
     var vertexPositions: [SIMD3<Float>]
     var entityName: String
@@ -32,6 +33,7 @@ class ImageEntity: Entity {
         self.meshResource = meshResource
         let material = SimpleMaterial(color: .gray, isMetallic: false)
         let modelEntity = ModelEntity(mesh: meshResource, materials: [material])
+        self.modelEntity = modelEntity
         self.addChild(modelEntity)
     }
     
@@ -80,5 +82,10 @@ class ImageEntity: Entity {
         var collision = CollisionComponent(shapes: [collisionShape])
         collision.filter = CollisionFilter(group: [], mask: [])
         self.components.set(collision)
+    }
+    
+    func updateTexture(material: SimpleMaterial) {
+        // Apply the material to the model of the entity.
+        self.modelEntity!.model?.materials = [material]
     }
 }
