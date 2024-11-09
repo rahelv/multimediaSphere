@@ -8,46 +8,6 @@ A component that handles standard drag, rotate, and scale gestures for an entity
 import RealityKit
 import SwiftUI
 
-public class EntityGestureState {
-    
-    /// The entity currently being dragged if a gesture is in progress.
-    var targetedEntity: Entity?
-    
-    // MARK: - Drag
-    
-    /// The starting position.
-    var dragStartPosition: SIMD3<Float> = .zero
-    
-    /// Marks whether the app is currently handling a drag gesture.
-    var isDragging = false
-    
-    /// When `rotateOnDrag` is`true`, this entity acts as the pivot point for the drag.
-    var pivotEntity: Entity?
-    
-    var initialOrientation: simd_quatf?
-    
-    // MARK: - Magnify
-    
-    /// The starting scale value.
-    var startScale: SIMD3<Float> = .one
-    
-    /// Marks whether the app is currently handling a scale gesture.
-    var isScaling = false
-    
-    // MARK: - Rotation
-    
-    /// The starting rotation value.
-    var startOrientation = Rotation3D.identity
-    
-    /// Marks whether the app is currently handling a rotation gesture.
-    var isRotating = false
-    
-    // MARK: - Singleton Accessor
-    
-    /// Retrieves the shared instance.
-    @MainActor static let shared = EntityGestureState()
-}
-
 // MARK: -
 
 /// A component that handles gesture logic for an entity.
@@ -83,8 +43,8 @@ public struct GestureComponent: Component, Codable {
         
         // Only allow a single Entity to be targeted at any given time.
         if state.targetedEntity == nil {
-            state.targetedEntity = value.entity
-            state.initialOrientation = value.entity.orientation(relativeTo: nil)
+            state.targetedEntity = value.entity.parent //TODO: find cleaner implementation
+            state.initialOrientation = value.entity.parent!.orientation(relativeTo: nil)
         }
         
         if pivotOnDrag {
@@ -190,15 +150,20 @@ public struct GestureComponent: Component, Codable {
         let state = EntityGestureState.shared
         guard canScale, !state.isDragging else { return }
         
-        let entity = value.entity
+//        let entity = value.entity
+        var entity = value.entity.parent
+        if (entity == nil) {
+            print("no parent")
+            entity = value.entity
+        }
         
         if !state.isScaling {
             state.isScaling = true
-            state.startScale = entity.scale
+            state.startScale = entity!.scale
         }
         
         let magnification = Float(value.magnification)
-        entity.scale = state.startScale * magnification
+        entity!.scale = state.startScale * magnification
     }
     
     /// Handle `.onEnded` actions for magnify (scale)  gestures
@@ -212,12 +177,16 @@ public struct GestureComponent: Component, Codable {
     @MainActor mutating func onChanged(value: EntityTargetValue<RotateGesture3D.Value>) {
         let state = EntityGestureState.shared
         guard canRotate, !state.isDragging else { return }
-
-        let entity = value.entity
+       
+        var entity = value.entity.parent
+        if (entity == nil) {
+            print("no parent")
+            entity = value.entity
+        }
         
         if !state.isRotating {
             state.isRotating = true
-            state.startOrientation = .init(entity.orientation(relativeTo: nil))
+            state.startOrientation = .init(entity!.orientation(relativeTo: nil))
         }
         
         let rotation = value.rotation
@@ -226,7 +195,7 @@ public struct GestureComponent: Component, Codable {
                                                               y: rotation.axis.y,
                                                               z: -rotation.axis.z))
         let newOrientation = state.startOrientation.rotated(by: flippedRotation)
-        entity.setOrientation(.init(newOrientation), relativeTo: nil)
+        entity!.setOrientation(.init(newOrientation), relativeTo: nil)
     }
     
     /// Handle `.onChanged` actions for rotate  gestures.

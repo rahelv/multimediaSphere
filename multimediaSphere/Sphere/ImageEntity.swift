@@ -7,6 +7,7 @@
 
 import Foundation
 import RealityFoundation
+import RealityKitContent
 
 class ImageEntity: Entity {
     var modelEntity: ModelEntity?
@@ -14,7 +15,7 @@ class ImageEntity: Entity {
     var vertexPositions: [SIMD3<Float>]
     var entityName: String
     var localUp: SIMD3<Float>
-
+    
     init(vertexPositions: [SIMD3<Float>], name: String, localUp: SIMD3<Float>) async throws {
         self.vertexPositions = vertexPositions
         self.entityName = name
@@ -63,25 +64,33 @@ class ImageEntity: Entity {
             textureCoordinates.append([1, 1])
             textureCoordinates.append([0, 1])
         }
-
+        
         var descriptor = MeshDescriptor(name: name)
         descriptor.positions = MeshBuffers.Positions(vertexPositions)
         descriptor.primitives = .polygons([4], [0, 1, 2, 3])
         descriptor.textureCoordinates = MeshBuffer.init(textureCoordinates)
-    //  descriptor.materials = .perFace(materialsArray)
+        //  descriptor.materials = .perFace(materialsArray)
         return descriptor
     }
-        
-    func addHover() { //TODO: maybe function needs to be called after instantiation ...
+    
+    func addHover() {
         self.components.set(InputTargetComponent())
         self.components.set(HoverEffectComponent())
-           
+        
         var collisionShape: ShapeResource //TODO: error is not catched ...
         collisionShape = ShapeResource.generateConvex(from: meshResource!)
-
+        
         var collision = CollisionComponent(shapes: [collisionShape])
         collision.filter = CollisionFilter(group: [], mask: [])
         self.components.set(collision)
+    }
+    
+    func addGestures() {
+        var component = GestureComponent()
+        component.canDrag = true
+        component.canScale = false
+        component.canRotate = true
+        self.components.set(component)
     }
     
     func updateTexture(material: SimpleMaterial) {

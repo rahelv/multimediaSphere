@@ -21,7 +21,6 @@ struct SphereView: View {
             do {
                 let sphereEntity = try await SphereEntity(resolution: 9) //TODO: change resolution
                 await sphereEntity.addHoverToChildEntities() //has to be called here!
-                sphereEntity.addGestures() //TODO: test
                 self.sphereEntity = sphereEntity
                 root.addChild(sphereEntity)
             } catch {

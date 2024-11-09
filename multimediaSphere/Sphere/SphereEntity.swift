@@ -16,7 +16,7 @@ class SphereEntity: Entity {
     let vertexPositions = VertexPositions.shared
     var sphereImageEntities: [ImageEntity] = [] //entity for each image on the sphere
 
-    init(resolution: Int = 9) async throws { //TODO: change resolution 
+    init(resolution: Int = 9) async throws { //TODO: change resolution
         self.resolution = resolution
         super.init()
         try await self.initialize()
@@ -51,24 +51,8 @@ class SphereEntity: Entity {
     func addHoverToChildEntities() async {
         for entity in sphereImageEntities {
             entity.addHover()
+            entity.addGestures()
         }
-    }
-    
-    func addGestures() {
-        // Enable the entity for input.
-        self.components.set(InputTargetComponent())
-        self.components.set(HoverEffectComponent())
-        
-        // Create a collision component with an empty group and mask. https://developer.apple.com/documentation/realitykit/inputtargetcomponent
-        var collision = CollisionComponent(shapes: [.generateSphere(radius: 0.4)])
-        collision.filter = CollisionFilter(group: [], mask: [])
-        self.components.set(collision)
-        
-        var component = GestureComponent()
-        component.canDrag = true
-        component.canScale = false
-        component.canRotate = true
-        self.components.set(component)
     }
     
     func updateTextures() { //TODO: move function to ImageMaterialGenerator
