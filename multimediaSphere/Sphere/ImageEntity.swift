@@ -69,7 +69,6 @@ class ImageEntity: Entity {
         descriptor.positions = MeshBuffers.Positions(vertexPositions)
         descriptor.primitives = .polygons([4], [0, 1, 2, 3])
         descriptor.textureCoordinates = MeshBuffer.init(textureCoordinates)
-        //  descriptor.materials = .perFace(materialsArray)
         return descriptor
     }
     
@@ -78,7 +77,7 @@ class ImageEntity: Entity {
         self.components.set(HoverEffectComponent())
         
         var collisionShape: ShapeResource //TODO: error is not catched ...
-        collisionShape = ShapeResource.generateConvex(from: meshResource!)
+        collisionShape = ShapeResource.generateConvex(from: meshResource!) //TODO: fix for resolution 10
         
         var collision = CollisionComponent(shapes: [collisionShape])
         collision.filter = CollisionFilter(group: [], mask: [])

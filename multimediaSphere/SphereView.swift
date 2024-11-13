@@ -36,7 +36,7 @@ struct SphereView: View {
                         Task {
                             let newSphere = try await SphereEntity(resolution: 9) //TODO: change resolution
                             await newSphere.addHoverToChildEntities() //has to be called here!
-                            newSphere.updateTextures()
+                            await newSphere.updateTextures()
                             sphereEntities.append(newSphere)
                             //TODO: make copying more performant. place sphere in empty space
                             root.addChild(newSphere)

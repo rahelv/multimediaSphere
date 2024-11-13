@@ -44,15 +44,21 @@ struct ImageMaterialGenerator {
         }.resume()
     }
     
-    func countImagesInDirectory(url: URL) -> Int {
+    func countImagesInDirectory(url: URL) async -> Int {
         do {
-            let myHTMLString = try String(contentsOf: url, encoding: .ascii) //TODO: use URLSession
+            let (data, _) = try await URLSession.shared.data(from: url)
             
-            let lines = myHTMLString.split { $0.isNewline }  // Split by newlines
+            guard let htmlString = String(data: data, encoding: .utf8) else {
+                   return 0
+            }
+            let lines = htmlString.split { $0.isNewline }  // Split by newlines
             return lines.count - 10 //TODO: maybe there's a better way, is it always 10 lines exactly which are not li elements ?
-        } catch let error {
-            print("Error: \(error)")
+            
+        } catch {
+            print("error: \(error)")
+            return 0
         }
-        return 0 
+        
+        
     }
 }

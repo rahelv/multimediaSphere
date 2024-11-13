@@ -28,7 +28,7 @@ class SphereEntity: Entity {
     
     private func initialize() async throws {
         try await self.generateSphereImageEntities(resolution: self.resolution)
-        self.updateTextures()
+        await self.updateTextures()
     }
     
     // creates array of meshresources containing mesh for every face of the sphere
@@ -55,11 +55,11 @@ class SphereEntity: Entity {
         }
     }
     
-    func updateTextures() { //TODO: move function to ImageMaterialGenerator
+    func updateTextures() async { //TODO: move function to ImageMaterialGenerator
         let imageGenerator = ImageMaterialGenerator()
         let baseURL = "https://v3c.xreco-retrieval.ch/v3c/thumbnails/"
         var randomFolder = imageGenerator.generateRandomFolder()
-        var imageCount = imageGenerator.countImagesInDirectory(url: URL(string: baseURL + randomFolder + "/")!)
+        var imageCount = await imageGenerator.countImagesInDirectory(url: URL(string: baseURL + randomFolder + "/")!)
         
         // Loop to load textures dynamically
         var counter: Int = 1
@@ -67,7 +67,7 @@ class SphereEntity: Entity {
             if (counter > imageCount) {
                 //get new random folder
                 randomFolder = imageGenerator.generateRandomFolder()
-                imageCount = imageGenerator.countImagesInDirectory(url: URL(string: baseURL + randomFolder + "/")!)
+                imageCount = await imageGenerator.countImagesInDirectory(url: URL(string: baseURL + randomFolder + "/")!)
                 counter = 1
             }
             let textureURL = URL(string: baseURL + randomFolder + "/" + randomFolder + String(format: "_%d.jpg", counter))
