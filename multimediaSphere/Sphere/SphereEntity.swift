@@ -50,7 +50,7 @@ class SphereEntity: Entity {
     
     func addHoverToChildEntities() async {
         for entity in sphereImageEntities {
-            entity.addHover()
+            await entity.addHover()
             entity.addGestures()
         }
     }

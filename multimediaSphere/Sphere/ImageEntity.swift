@@ -72,12 +72,12 @@ class ImageEntity: Entity {
         return descriptor
     }
     
-    func addHover() {
+    func addHover() async {
         self.components.set(InputTargetComponent())
         self.components.set(HoverEffectComponent())
         
         var collisionShape: ShapeResource //TODO: error is not catched ...
-        collisionShape = ShapeResource.generateConvex(from: meshResource!) //TODO: fix for resolution 10
+        collisionShape = try! await ShapeResource.generateStaticMesh(from: meshResource!)
         
         var collision = CollisionComponent(shapes: [collisionShape])
         collision.filter = CollisionFilter(group: [], mask: [])
