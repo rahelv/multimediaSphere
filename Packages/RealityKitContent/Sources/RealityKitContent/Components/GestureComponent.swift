@@ -31,6 +31,8 @@ public struct GestureComponent: Component, Codable {
     /// A Boolean value that indicates whether a gesture can rotate the entity.
     public var canRotate: Bool = true
     
+    public var canTap: Bool = true
+    
     public init() {}
     
     // MARK: - Drag Logic
@@ -201,5 +203,22 @@ public struct GestureComponent: Component, Codable {
     /// Handle `.onChanged` actions for rotate  gestures.
     @MainActor mutating func onEnded(value: EntityTargetValue<RotateGesture3D.Value>) {
         EntityGestureState.shared.isRotating = false
+    }
+    
+    
+    // MARK: - Spatial Tap Logic
+    
+    /// Handle `.onChanged` actions for tap  gestures.
+    @MainActor mutating func onChanged(value: EntityTargetValue<SpatialTapGesture.Value>) {
+        let state = EntityGestureState.shared
+        guard canTap, !state.isDragging else { return }
+    }
+    
+    /// Handle `.onEnded` actions for tap gestures
+    @MainActor mutating func onEnded(value: EntityTargetValue<SpatialTapGesture.Value>) {
+        let name = value.entity.name
+        print("tap ended on \(name)")
+        
+        //TODO: open new view with the image named value.entity.name
     }
 }

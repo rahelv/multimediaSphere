@@ -13,12 +13,10 @@ class ImageEntity: Entity {
     var modelEntity: ModelEntity?
     var meshResource: MeshResource?
     var vertexPositions: [SIMD3<Float>]
-    var entityName: String
     var localUp: SIMD3<Float>
     
-    init(vertexPositions: [SIMD3<Float>], name: String, localUp: SIMD3<Float>) async throws {
+    init(vertexPositions: [SIMD3<Float>], localUp: SIMD3<Float>) async throws {
         self.vertexPositions = vertexPositions
-        self.entityName = name
         self.localUp = localUp
         super.init()
         try await self.initialize()
@@ -29,7 +27,7 @@ class ImageEntity: Entity {
     }
     
     private func initialize() async throws {
-        let descriptor = self.createDescriptor(vertexPositions: vertexPositions, name: self.entityName, localUp: localUp)
+        let descriptor = self.createDescriptor(vertexPositions: vertexPositions, localUp: localUp)
         let meshResource = try MeshResource.generate(from: [descriptor])
         self.meshResource = meshResource
         let material = SimpleMaterial(color: .gray, isMetallic: false)
@@ -38,7 +36,7 @@ class ImageEntity: Entity {
         self.addChild(modelEntity)
     }
     
-    private func createDescriptor(vertexPositions: [SIMD3<Float>], name: String, localUp: SIMD3<Float>) -> MeshDescriptor {
+    private func createDescriptor(vertexPositions: [SIMD3<Float>], localUp: SIMD3<Float>) -> MeshDescriptor {
         var textureCoordinates = [SIMD2<Float>]() //texture coordinates for a single face
         
         switch localUp {
@@ -65,7 +63,7 @@ class ImageEntity: Entity {
             textureCoordinates.append([0, 1])
         }
         
-        var descriptor = MeshDescriptor(name: name)
+        var descriptor = MeshDescriptor(name: "none")
         descriptor.positions = MeshBuffers.Positions(vertexPositions)
         descriptor.primitives = .polygons([4], [0, 1, 2, 3])
         descriptor.textureCoordinates = MeshBuffer.init(textureCoordinates)
@@ -89,6 +87,7 @@ class ImageEntity: Entity {
         component.canDrag = true
         component.canScale = false
         component.canRotate = true
+        component.canTap = true
         self.components.set(component)
     }
     
