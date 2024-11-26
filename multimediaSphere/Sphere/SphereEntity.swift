@@ -28,7 +28,8 @@ class SphereEntity: Entity {
     
     private func initialize() async throws {
         try await self.generateSphereImageEntities(resolution: self.resolution)
-        await self.updateTextures()
+//        await self.updateTextures()
+        await self.updateFlowerTextures()
     }
     
     // creates array of meshresources containing mesh for every face of the sphere
@@ -37,7 +38,7 @@ class SphereEntity: Entity {
         for direction in vertexPositions.edges {
             for edges in direction {
                 do {
-                    let imageEntity: ImageEntity = try await ImageEntity.init(vertexPositions: edges, name: "face", localUp: vertexPositions.directions[directionIndex])
+                    let imageEntity: ImageEntity = try await ImageEntity.init(vertexPositions: edges, localUp: vertexPositions.directions[directionIndex])
                     sphereImageEntities.append(imageEntity)
                     self.addChild(imageEntity)
                 } catch {
@@ -82,4 +83,18 @@ class SphereEntity: Entity {
             }
         }
     }
+    
+    func updateFlowerTextures() async { //TODO: move function to ImageMaterialGenerator
+           let imageGenerator = ImageMaterialGenerator()
+           let materials = imageGenerator.generateFlowerMaterials(count: Double(sphereImageEntities.count))
+          
+           var index = 0
+           // Loop to load textures dynamically
+           for entity in sphereImageEntities {
+               entity.updateTexture(material: materials[index].material)
+               entity.name = materials[index].name
+               print("entity name: \(entity.name)")
+               index+=1
+           }
+       }
 }
