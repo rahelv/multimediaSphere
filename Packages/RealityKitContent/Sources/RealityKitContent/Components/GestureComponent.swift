@@ -45,7 +45,7 @@ public struct GestureComponent: Component, Codable {
         
         // Only allow a single Entity to be targeted at any given time.
         if state.targetedEntity == nil {
-            state.targetedEntity = value.entity.parent //TODO: find cleaner implementation
+            state.targetedEntity = value.entity.parent
             state.initialOrientation = value.entity.parent!.orientation(relativeTo: nil)
         }
         
@@ -178,11 +178,10 @@ public struct GestureComponent: Component, Codable {
     /// Handle `.onChanged` actions for rotate  gestures.
     @MainActor mutating func onChanged(value: EntityTargetValue<RotateGesture3D.Value>) {
         let state = EntityGestureState.shared
-        guard canRotate, !state.isDragging else { return }
+        guard canRotate, !state.isDragging, !state.isSelectingImage else { return }
        
         var entity = value.entity.parent
         if (entity == nil) {
-            print("no parent")
             entity = value.entity
         }
         
@@ -206,19 +205,19 @@ public struct GestureComponent: Component, Codable {
     }
     
     
-    // MARK: - Spatial Tap Logic
-    
-    /// Handle `.onChanged` actions for tap  gestures.
-    @MainActor mutating func onChanged(value: EntityTargetValue<SpatialTapGesture.Value>) {
-        let state = EntityGestureState.shared
-        guard canTap, !state.isDragging else { return }
-    }
-    
-    /// Handle `.onEnded` actions for tap gestures
-    @MainActor mutating func onEnded(value: EntityTargetValue<SpatialTapGesture.Value>) {
-        let name = value.entity.name
-        print("tap ended on \(name)")
-        
-        //TODO: open new view with the image named value.entity.name
-    }
+//    // MARK: - Spatial Tap Logic
+//    
+//    /// Handle `.onChanged` actions for tap  gestures.
+//    @MainActor mutating func onChanged(value: EntityTargetValue<SpatialTapGesture.Value>) {
+//        let state = EntityGestureState.shared
+//        guard canTap, !state.isDragging else { return }
+//    }
+//    
+//    /// Handle `.onEnded` actions for tap gestures
+//    @MainActor mutating func onEnded(value: EntityTargetValue<SpatialTapGesture.Value>) {
+//        let name = value.entity.name
+//        print("tap ended on \(name)")
+//        
+//        //TODO: open new view with the image named value.entity.name
+//    }
 }

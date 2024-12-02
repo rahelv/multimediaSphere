@@ -19,10 +19,22 @@ struct multimediaSphereApp: App {
     @State private var appModel = AppModel()
 
     var body: some Scene {
-        WindowGroup {
+//        WindowGroup {
+//            QueryView()
+//                .environment(appModel)
+//        }
+//        .windowStyle(.volumetric)
+        
+        ImmersiveSpace(id: appModel.immersiveSpaceID) {
             SphereView()
                 .environment(appModel)
+                .onAppear {
+                    appModel.immersiveSpaceState = .open
+                }
+                .onDisappear {
+                    appModel.immersiveSpaceState = .closed
+                }
         }
-        .windowStyle(.volumetric)
+        .immersionStyle(selection: .constant(.mixed), in: .mixed)
     }
 }

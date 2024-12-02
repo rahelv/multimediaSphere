@@ -93,7 +93,6 @@ class SphereEntity: Entity {
            for entity in sphereImageEntities {
                entity.updateTexture(material: materials[index].material)
                entity.name = materials[index].name
-               print("entity name: \(entity.name)")
                index+=1
            }
        }

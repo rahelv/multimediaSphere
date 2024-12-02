@@ -17,7 +17,6 @@ public extension RealityView {
         simultaneousGesture(dragGesture)
             .simultaneousGesture(magnifyGesture)
             .simultaneousGesture(rotateGesture)
-            .simultaneousGesture(spatialTapGesture)
     }
     
     /// Builds a drag gesture.
@@ -37,13 +36,6 @@ public extension RealityView {
     /// Builds a rotate gesture.
     var rotateGesture: some Gesture {
         RotateGesture3D()
-            .targetedToAnyEntity()
-            .useGestureComponent()
-    }
-    
-    /// Builds a spatial tap gesture.
-    var spatialTapGesture: some Gesture {
-        SpatialTapGesture()
             .targetedToAnyEntity()
             .useGestureComponent()
     }

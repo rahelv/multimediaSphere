@@ -8,7 +8,7 @@
 import RealityKit
 import SwiftUI
 
-public class EntityGestureState {
+public class EntityGestureState: ObservableObject {
     
     /// The entity currently being dragged if a gesture is in progress.
     var targetedEntity: Entity?
@@ -42,8 +42,10 @@ public class EntityGestureState {
     /// Marks whether the app is currently handling a rotation gesture.
     var isRotating = false
     
+    public var isSelectingImage = false
+    
     // MARK: - Singleton Accessor
     
     /// Retrieves the shared instance.
-    @MainActor static let shared = EntityGestureState()
+    @MainActor public static let shared = EntityGestureState()
 }
