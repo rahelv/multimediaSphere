@@ -13,11 +13,9 @@ class ImageEntity: Entity {
     var modelEntity: ModelEntity?
     var meshResource: MeshResource?
     var vertexPositions: [SIMD3<Float>]
-    var localUp: SIMD3<Float>
     
-    init(vertexPositions: [SIMD3<Float>], localUp: SIMD3<Float>) async throws {
+    init(vertexPositions: [SIMD3<Float>]) async throws {
         self.vertexPositions = vertexPositions
-        self.localUp = localUp
         super.init()
         try await self.initialize()
     }
@@ -27,7 +25,12 @@ class ImageEntity: Entity {
     }
     
     private func initialize() async throws {
-        let descriptor = self.createDescriptor(vertexPositions: vertexPositions, localUp: localUp)
+        var descriptor: MeshDescriptor
+               if vertexPositions.count == 3 {
+                   descriptor = self.createDescriptorTriangle(vertexPositions: vertexPositions)
+               } else {
+                   descriptor = self.createDescriptorQuad(vertexPositions: vertexPositions)
+               }
         let meshResource = try MeshResource.generate(from: [descriptor])
         self.meshResource = meshResource
         let material = SimpleMaterial(color: .gray, isMetallic: false)
@@ -36,31 +39,13 @@ class ImageEntity: Entity {
         self.addChild(modelEntity)
     }
     
-    private func createDescriptor(vertexPositions: [SIMD3<Float>], localUp: SIMD3<Float>) -> MeshDescriptor {
+    private func createDescriptorQuad(vertexPositions: [SIMD3<Float>]) -> MeshDescriptor {
         var textureCoordinates = [SIMD2<Float>]() //texture coordinates for a single face
         
-        switch localUp {
-        case _ where abs(localUp.x) == 1 : //left and right
-            textureCoordinates.append([1, 1])
-            textureCoordinates.append([0, 1])
-            textureCoordinates.append([0, 0])
-            textureCoordinates.append([1, 0])
-        case _ where abs(localUp.y) == 1 : //up and down
-            textureCoordinates.append([0, 0])
-            textureCoordinates.append([1, 0])
-            textureCoordinates.append([1, 1])
-            textureCoordinates.append([0, 1])
-        case _ where abs(localUp.z) == 1 : //forward and back
-            textureCoordinates.append([0, 0])
-            textureCoordinates.append([0, 1])
-            textureCoordinates.append([1, 1])
-            textureCoordinates.append([1, 0])
-        default: //TODO: what default case?
-            textureCoordinates.append([0, 0])
-            textureCoordinates.append([1, 0])
-            textureCoordinates.append([1, 1])
-            textureCoordinates.append([0, 1])
-        }
+        textureCoordinates.append([1, 1])
+        textureCoordinates.append([0, 1])
+        textureCoordinates.append([0, 0])
+        textureCoordinates.append([1, 0])
         
         var descriptor = MeshDescriptor(name: "none")
         descriptor.positions = MeshBuffers.Positions(vertexPositions)
@@ -68,6 +53,20 @@ class ImageEntity: Entity {
         descriptor.textureCoordinates = MeshBuffer.init(textureCoordinates)
         return descriptor
     }
+    
+    private func createDescriptorTriangle(vertexPositions: [SIMD3<Float>]) -> MeshDescriptor {
+           var textureCoordinates = [SIMD2<Float>]() //texture coordinates for a single face
+           
+           textureCoordinates.append([0, 0])
+           textureCoordinates.append([0, 1])
+           textureCoordinates.append([1, 1])
+           
+           var descriptor = MeshDescriptor(name: name)
+           descriptor.positions = MeshBuffers.Positions(vertexPositions)
+           descriptor.primitives = .polygons([3], [0, 1, 2])
+           descriptor.textureCoordinates = MeshBuffer.init(textureCoordinates)
+           return descriptor
+       }
     
     func addHover() async {
         self.components.set(InputTargetComponent())
