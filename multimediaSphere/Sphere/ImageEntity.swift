@@ -56,7 +56,6 @@ class ImageEntity: Entity {
             textureCoordinates.append([1, 1])
             textureCoordinates.append([1, 0])
         default: //TODO: what default case?
-            print("default")
             textureCoordinates.append([0, 0])
             textureCoordinates.append([1, 0])
             textureCoordinates.append([1, 1])

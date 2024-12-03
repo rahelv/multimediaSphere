@@ -19,12 +19,6 @@ struct multimediaSphereApp: App {
     @State private var appModel = AppModel()
 
     var body: some Scene {
-//        WindowGroup {
-//            QueryView()
-//                .environment(appModel)
-//        }
-//        .windowStyle(.volumetric)
-        
         ImmersiveSpace(id: appModel.immersiveSpaceID) {
             SphereView()
                 .environment(appModel)

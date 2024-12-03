@@ -127,7 +127,6 @@ public struct GestureComponent: Component, Codable {
         if let initialOrientation = state.initialOrientation {
             state.targetedEntity?.setOrientation(initialOrientation, relativeTo: nil)
         }
-        
     }
     
     /// Handle `.onEnded` actions for drag gestures.
