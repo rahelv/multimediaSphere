@@ -10,5 +10,5 @@ import RealityFoundation
 
 struct NamedMaterial {
     let name: String
-    let material: SimpleMaterial
+    var material: PhysicallyBasedMaterial
 }

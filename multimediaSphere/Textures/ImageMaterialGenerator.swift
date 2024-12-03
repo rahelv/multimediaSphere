@@ -17,7 +17,7 @@ struct ImageMaterialGenerator {
         return randomFolder
     }
     
-    func createMaterialAsync(_ url: URL, completion: @escaping (SimpleMaterial?) -> Void) {
+    func createMaterialAsync(_ url: URL, completion: @escaping (PhysicallyBasedMaterial?) -> Void) {
         URLSession.shared.dataTask(with: url) { data, response, error in
             guard let data = data, error == nil else {
                 completion(nil)
@@ -31,8 +31,8 @@ struct ImageMaterialGenerator {
                 do {
                     // Create a TextureResource by loading the contents of the file URL.
                     let texture = try TextureResource.load(contentsOf: fileURL)
-                    var material = SimpleMaterial()
-                    material.color = .init(texture: .init(texture))
+                    var material = PhysicallyBasedMaterial()
+                    material.baseColor = .init(texture: .init(texture))
                     completion(material)
                 } catch {
                     print("there was an error loading the data: \(error.localizedDescription)")
@@ -68,13 +68,14 @@ struct ImageMaterialGenerator {
                   let textureName = String(format: "image_%05d", i)
                   do {
                       let texture = try TextureResource.load(named: textureName)
-                      var material = SimpleMaterial()
-                      material.color = .init(texture: .init(texture))
+                      var material = PhysicallyBasedMaterial()
+                      material.baseColor = .init(texture: .init(texture))
                       materials.append(NamedMaterial(name: textureName, material: material))
                   } catch {
                       print("Unable to load texture \(textureName).")
                       // Fallback material
-                      let material = SimpleMaterial(color: .gray, isMetallic: false)
+                      var material = PhysicallyBasedMaterial()
+                      material.baseColor = PhysicallyBasedMaterial.BaseColor(tint:.gray)
                       materials.append(NamedMaterial(name: "fallbackMaterial", material: material))
                   }
               }

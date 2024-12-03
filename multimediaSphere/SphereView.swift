@@ -8,12 +8,14 @@ struct SphereView: View {
     @State private var root: Entity = Entity()
     @State private var selectedImageName: String? // Holds the selected image name
     @State private var isSelectingImage: Bool = false
+    @State private var toggleZoom: Bool = false
     @ObservedObject private var state = EntityGestureState.shared
     
     let session = ARKitSession()
     let worldTracking = WorldTrackingProvider()
     
     var body: some View {
+        
         ZStack {
             RealityView { content, attachments in
                 Task {
@@ -37,7 +39,7 @@ struct SphereView: View {
                 guard let deviceAnchor = worldTracking.queryDeviceAnchor(atTimestamp: CACurrentMediaTime()) else { return }
                 let deviceOrigin = deviceAnchor.originFromAnchorTransform.columns.3
                 let devicePositionInEntitySpace = sphereEntity.convert(position: SIMD3(deviceOrigin.x, deviceOrigin.y, deviceOrigin.z), from: nil ) //device position relative to world coordinates
-                print("Sphere Position: \(sphereEntity.position)")
+//                print("Sphere Position: \(sphereEntity.position)")
 //                let facingDirection = devicePosition - sphereEntity.position(relativeTo: nil) //relative to world
 //                print("Facing Direction: \(facingDirection)")
 
@@ -85,7 +87,31 @@ struct SphereView: View {
                         selectedImageName = value.entity.name
                         state.isSelectingImage = true
                         isSelectingImage = true
+                        
                     }
+            )
+            .simultaneousGesture(
+                    TapGesture(count: 2)
+                        .targetedToAnyEntity()
+                        .onEnded { value in
+                            if (toggleZoom) {
+                                //to make sure view is closed
+                                state.isSelectingImage = false
+                                isSelectingImage = false
+                                
+                                let sphereEntity = root.children[0] as! SphereEntity
+                                sphereEntity.updateFlowerTexturesForZoom()
+                                toggleZoom = false
+                            } else {
+                                //to make sure view is closed
+                                state.isSelectingImage = false
+                                isSelectingImage = false
+                                
+                                let sphereEntity = root.children[0] as! SphereEntity
+                                sphereEntity.updateFlowerTextures()
+                                toggleZoom = true
+                            }
+                        }
             )
         }
     }

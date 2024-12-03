@@ -15,6 +15,7 @@ class SphereEntity: Entity {
     var resolution: Int
     let vertexPositions = VertexPositions.shared
     var sphereImageEntities: [ImageEntity] = [] //entity for each image on the sphere
+    var materials: [NamedMaterial] = []
     
     init(resolution: Int = 9) async throws { //TODO: change resolution
         self.resolution = resolution
@@ -29,14 +30,15 @@ class SphereEntity: Entity {
     private func initialize() async throws {
         try await self.generateSphereImageEntities(resolution: self.resolution)
         //        await self.updateTextures()
-        await self.updateFlowerTextures()
+        await self.generateFlowerTextures()
+        self.updateFlowerTextures()
     }
     
     // creates array of meshresources containing mesh for every face of the sphere
     private func generateSphereImageEntities(resolution: Int) async throws { //TODO: resolution should be the same everywhere ...
         for faces in vertexPositions.faces {
             do {
-                let imageEntity: ImageEntity = try await ImageEntity.init(vertexPositions: faces)
+                let imageEntity: ImageEntity = try await ImageEntity.init(vertexPositions: faces.vertices, positionalIdentifier: faces.position)
                 sphereImageEntities.append(imageEntity)
                 self.addChild(imageEntity)
             } catch {
@@ -80,16 +82,50 @@ class SphereEntity: Entity {
             }
         }
         
-        func updateFlowerTextures() async { //TODO: move function to ImageMaterialGenerator
+        func generateFlowerTextures() async { //TODO: move function to ImageMaterialGenerator
             let imageGenerator = ImageMaterialGenerator()
-            let materials = imageGenerator.generateFlowerMaterials(count: Double(sphereImageEntities.count))
-            
+            materials = imageGenerator.generateFlowerMaterials(count: Double(sphereImageEntities.count))
+        }
+    
+        func updateFlowerTextures() {
             var index = 0
             // Loop to load textures dynamically
             for entity in sphereImageEntities {
                 entity.updateTexture(material: materials[index].material)
                 entity.name = materials[index].name
                 index+=1
+            }
+        }
+    
+        func updateFlowerTexturesForZoom() {
+            var startIndex = 0
+            var materialCount = 1
+            while startIndex <= 840 {
+                for columnCount in stride(from: 0, to: 30, by: 2) { //immer zwei cols miteinander
+                    let material = materials[materialCount]
+                    if (startIndex  <= 30) {
+                        sphereImageEntities[startIndex + columnCount].transformTextureCoordinates(material: material)
+                        sphereImageEntities[startIndex + columnCount + 2].transformTextureCoordinates(material: material)
+                        sphereImageEntities[startIndex + columnCount + 60].transformTextureCoordinates(material: material)
+                        sphereImageEntities[startIndex + columnCount + 60 + 2].transformTextureCoordinates(material: material) //TODO: something here is still not correct
+                        
+                        sphereImageEntities[startIndex + columnCount + 840].transformTextureCoordinates(material: material)
+                        sphereImageEntities[startIndex + columnCount + 1 + 840].transformTextureCoordinates(material: material)
+                        sphereImageEntities[startIndex + columnCount + 870].transformTextureCoordinates(material: material)
+                        sphereImageEntities[startIndex + columnCount + 1 + 870].transformTextureCoordinates(material: material) //TODO: something here is still not correct
+                    } else {
+                        let material = materials[materialCount]
+                        sphereImageEntities[startIndex + columnCount].transformTextureCoordinates(material: material)
+                        sphereImageEntities[startIndex + columnCount + 1].transformTextureCoordinates(material: material)
+                        sphereImageEntities[startIndex + columnCount + 30].transformTextureCoordinates(material: material)
+                        sphereImageEntities[startIndex + columnCount + 30 + 1].transformTextureCoordinates(material: material)
+                    }
+                    materialCount = materialCount + 1
+                }
+                if (startIndex  <= 30) {
+                    startIndex = startIndex + 30
+                }
+                startIndex = startIndex + 60
             }
         }
     }

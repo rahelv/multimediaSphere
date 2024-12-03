@@ -8,6 +8,11 @@
 import Foundation
 import RealityFoundation
 
+struct Face {
+    let vertices: [SIMD3<Float>]
+    let position: positionIdentifier
+}
+
 //Singleton for VertexPositions
 class VertexPositions {
     static let shared: VertexPositions = {
@@ -15,12 +20,13 @@ class VertexPositions {
         // setup code
         return instance
     }()
-    var latitudes: Int = 15
-    var longitudes: Int = 15
+    var latitudes: Int = 30
+    var longitudes: Int = 30
     var vertices: [SIMD3<Float>] = [] //vertexPositions
-    var faces: [[SIMD3<Float>]] = [] //the vertices of all triangles and quads
+    var faces: [Face] = [] //the vertices of all triangles and quads
+//    var zoomFaces: [[SIMD3<Float>]] = [] //vertices of all triangles and quads once zoomed in
     
-    private init() { //TODO: change resolution
+    private init() {
         self.calculateVertices(latitudes: latitudes, longitudes: longitudes);
     }
     
@@ -49,22 +55,47 @@ class VertexPositions {
         for i in 0..<longitudes {
             var i0 = i + 1;
             var i1 = (i + 1) % longitudes + 1;
-            faces.append([SIMD3(topVertex), vertices[i1], vertices[i0]]) //TODO: heeee
+            faces.append(Face(vertices: [SIMD3(topVertex), vertices[i1], vertices[i0]], position: .triangletop)) //TODO: heeee
             i0 = i + longitudes * (latitudes - 2) + 1;
             i1 = (i + 1) % longitudes + longitudes * (latitudes - 2) + 1;
-            faces.append([SIMD3(bottomVertex), vertices[i0], vertices[i1]])
+            faces.append(Face(vertices: [SIMD3(bottomVertex), vertices[i0], vertices[i1]], position: .triangletop))
         }
-        
+       
         // add quads per stack / slice
-        for j in 0..<latitudes-2 {
-            let j0 = j * longitudes + 1;
-            let j1 = (j + 1) * longitudes + 1;
-            for i in 0..<longitudes {
+        for j in 0..<longitudes-2 {
+            let j0 = j * latitudes + 1;
+            let j1 = (j + 1) * latitudes + 1;
+            for i in 0..<latitudes {
                 let i0 = j0 + i;
-                let i1 = j0 + (i + 1) % longitudes;
-                let i2 = j1 + (i + 1) % longitudes;
+                let i1 = j0 + (i + 1) % latitudes;
+                let i2 = j1 + (i + 1) % latitudes;
                 let i3 = j1 + i;
-                faces.append([vertices[i0], vertices[i1], vertices[i2], vertices[i3]])
+                
+                //position:
+                var position: positionIdentifier
+                if (j == 0) {
+                    if (i % 2 == 0) {
+//                        position = .trianglebottomleft
+                        position = .bottomleft
+                    } else {
+//                     position = .trianglebottomright
+                        position = .bottomright
+                    }
+                }
+                else if (j % 2 == 0) { //top or bottom, based on longitude
+                    if (i % 2 == 0) {
+                        position = .topleft
+                    } else {
+                        position = .topright
+                    }
+                } else {
+                    if (i % 2 == 0) {
+                        position = .bottomleft
+                    } else {
+                        position = .bottomright
+                    }
+                }
+                faces.append(Face(vertices: [vertices[i0], vertices[i1], vertices[i2], vertices[i3]], position: position))
             }
         }
     }
