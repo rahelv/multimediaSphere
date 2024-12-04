@@ -7,7 +7,6 @@
 
 import RealityFoundation
 import RealityKit
-import RealityKitContent
 import Foundation
 
 @MainActor
@@ -15,6 +14,7 @@ class SphereEntity: Entity {
     let vertexPositions = VertexPositions.shared
     var sphereImageEntities: [[ImageEntity]] = Array(repeating: [], count: 28) //entity for each image on the sphere
     var materials: [NamedMaterial] = []
+    var zoomLevel: Int = 0
     
     init(param: Int) async throws {
         super.init()
@@ -104,45 +104,50 @@ class SphereEntity: Entity {
             }
         }
     
-    func updateFlowerTexturesForZoom(zoomLevel: Int) {
+    func updateFlowerTexturesForZoom(zoomTo: Int) {
         var materialCount = 1;
-        if (zoomLevel == 0) {
+        if (zoomTo == 1) {
             for row in stride(from: 3, through: vertexPositions.resolution-1, by: 2) {
                 for col in stride(from: 0, to: vertexPositions.resolution, by: 2) {
                     let material = materials[materialCount]
-                    sphereImageEntities[row][col].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
-                    sphereImageEntities[row][col+1].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
-                    sphereImageEntities[row-1][col].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
-                    sphereImageEntities[row-1][col+1].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row][col].transformTextureCoordinates(material: material, zoomTo: zoomTo)
+                    sphereImageEntities[row][col+1].transformTextureCoordinates(material: material, zoomTo: zoomTo)
+                    sphereImageEntities[row-1][col].transformTextureCoordinates(material: material, zoomTo: zoomTo)
+                    sphereImageEntities[row-1][col+1].transformTextureCoordinates(material: material, zoomTo: zoomTo)
                     materialCount = materialCount + 1
                 }
             }
-        } else if (zoomLevel == 1) {
+            zoomLevel = 1
+        } else if (zoomTo == 2) {
             for row in stride(from: 3, through: vertexPositions.resolution-1, by: 4) {
                 for col in stride(from: 0, to: vertexPositions.resolution, by: 4) {
                     let material =  materials[materialCount]
-                    sphereImageEntities[row][col].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
-                    sphereImageEntities[row][col+1].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
-                    sphereImageEntities[row][col+2].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
-                    sphereImageEntities[row][col+3].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row][col].transformTextureCoordinates(material: material, zoomTo: zoomTo)
+                    sphereImageEntities[row][col+1].transformTextureCoordinates(material: material, zoomTo: zoomTo)
+                    sphereImageEntities[row][col+2].transformTextureCoordinates(material: material, zoomTo: zoomTo)
+                    sphereImageEntities[row][col+3].transformTextureCoordinates(material: material, zoomTo: zoomTo)
                     
-                    sphereImageEntities[row-1][col].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
-                    sphereImageEntities[row-1][col+1].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
-                    sphereImageEntities[row-1][col+2].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
-                    sphereImageEntities[row-1][col+3].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row-1][col].transformTextureCoordinates(material: material, zoomTo: zoomTo)
+                    sphereImageEntities[row-1][col+1].transformTextureCoordinates(material: material, zoomTo: zoomTo)
+                    sphereImageEntities[row-1][col+2].transformTextureCoordinates(material: material, zoomTo: zoomTo)
+                    sphereImageEntities[row-1][col+3].transformTextureCoordinates(material: material, zoomTo: zoomTo)
                     
-                    sphereImageEntities[row-2][col].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
-                    sphereImageEntities[row-2][col+1].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
-                    sphereImageEntities[row-2][col+2].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
-                    sphereImageEntities[row-2][col+3].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row-2][col].transformTextureCoordinates(material: material, zoomTo: zoomTo)
+                    sphereImageEntities[row-2][col+1].transformTextureCoordinates(material: material, zoomTo: zoomTo)
+                    sphereImageEntities[row-2][col+2].transformTextureCoordinates(material: material, zoomTo: zoomTo)
+                    sphereImageEntities[row-2][col+3].transformTextureCoordinates(material: material, zoomTo: zoomTo)
                     
-                    sphereImageEntities[row-3][col].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
-                    sphereImageEntities[row-3][col+1].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
-                    sphereImageEntities[row-3][col+2].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
-                    sphereImageEntities[row-3][col+3].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row-3][col].transformTextureCoordinates(material: material, zoomTo: zoomTo)
+                    sphereImageEntities[row-3][col+1].transformTextureCoordinates(material: material, zoomTo: zoomTo)
+                    sphereImageEntities[row-3][col+2].transformTextureCoordinates(material: material, zoomTo: zoomTo)
+                    sphereImageEntities[row-3][col+3].transformTextureCoordinates(material: material, zoomTo: zoomTo)
                     materialCount = materialCount + 1
                 }
             }
+            zoomLevel = 2
+        } else {
+            self.updateFlowerTextures()
+            zoomLevel = 0
         }
     }
 }

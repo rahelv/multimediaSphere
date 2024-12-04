@@ -1,15 +1,12 @@
 import Foundation
 import SwiftUI
 import RealityKit
-import RealityKitContent
 import ARKit
 
 struct SphereView: View {
     @State private var root: Entity = Entity()
     @State private var selectedImageName: String? // Holds the selected image name
     @State private var isSelectingImage: Bool = false
-    @State private var zoomLevel: Int = 0
-    @ObservedObject private var state = EntityGestureState.shared
     
     let session = ARKitSession()
     let worldTracking = WorldTrackingProvider()
@@ -66,7 +63,6 @@ struct SphereView: View {
                             .padding()
                             .overlay(
                                 Button(action: {
-                                    state.isSelectingImage = false
                                     isSelectingImage = false
                                 }) {
                                     Image(systemName: "xmark.circle.fill")
@@ -83,30 +79,9 @@ struct SphereView: View {
                 SpatialTapGesture()
                     .targetedToAnyEntity()
                     .onEnded { value in
-                        let sel_ent = value.entity as! ImageEntity
                         selectedImageName = value.entity.name
-                        state.isSelectingImage = true
                         isSelectingImage = true
-                        
                     }
-            )
-            .simultaneousGesture(
-                    TapGesture(count: 2)
-                        .targetedToAnyEntity()
-                        .onEnded { value in
-                            switch zoomLevel {
-                            case 0, 1:
-                                let sphereEntity = root.children[0] as! SphereEntity
-                                sphereEntity.updateFlowerTexturesForZoom(zoomLevel: self.zoomLevel)
-                                zoomLevel = zoomLevel + 1
-                            case 2:
-                                let sphereEntity = root.children[0] as! SphereEntity
-                                sphereEntity.updateFlowerTextures()
-                                zoomLevel = 0
-                            default:
-                                print("TODO")
-                            }
-                        }
             )
         }
     }

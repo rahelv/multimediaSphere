@@ -7,9 +7,6 @@
 
 import Foundation
 import RealityFoundation
-import RealityKitContent
-
-
 
 class ImageEntity: Entity {
     var modelEntity: ModelEntity?
@@ -73,10 +70,10 @@ class ImageEntity: Entity {
            return descriptor
     }
     
-    func transformTextureCoordinates(material: NamedMaterial, zoomLevel: Int) {
+    func transformTextureCoordinates(material: NamedMaterial, zoomTo: Int) {
         var newMaterial = material
         
-        if (zoomLevel == 0) {
+        if (zoomTo == 1) {
             switch positionalIdentifier {
                 case .bottomleft_topleft, .bottomright_topleft, .topleft_topleft, .topright_topleft:
                     newMaterial.zoomTexture(inputOffset: [0, 0], inputScale: [0.5, 0.5])
@@ -93,7 +90,7 @@ class ImageEntity: Entity {
                     break
             }
         }
-        if (zoomLevel == 1) {
+        if (zoomTo == 2) {
             switch positionalIdentifier {
                 
             case .topleft_topleft:
@@ -160,7 +157,7 @@ class ImageEntity: Entity {
         func addGestures() {
             var component = GestureComponent()
             component.canDrag = true
-            component.canScale = false
+            component.canZoom = true
             component.canRotate = true
             component.canTap = true
             self.components.set(component)

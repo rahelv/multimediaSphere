@@ -27,12 +27,10 @@ public class EntityGestureState: ObservableObject {
     var initialOrientation: simd_quatf?
     
     // MARK: - Magnify
-    
-    /// The starting scale value.
-    var startScale: SIMD3<Float> = .one
+    var magnification: Float = 0
     
     /// Marks whether the app is currently handling a scale gesture.
-    var isScaling = false
+    var isZooming = false
     
     // MARK: - Rotation
     
@@ -42,7 +40,9 @@ public class EntityGestureState: ObservableObject {
     /// Marks whether the app is currently handling a rotation gesture.
     var isRotating = false
     
-    public var isSelectingImage = false
+    //MARK: - SpatialTap
+    
+    var isSelectingImage = false
     
     // MARK: - Singleton Accessor
     

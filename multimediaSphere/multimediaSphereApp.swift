@@ -6,13 +6,12 @@
 //
 
 import SwiftUI
-import RealityKitContent
 
 @main
 struct multimediaSphereApp: App {
     
     init() {
-        RealityKitContent.GestureComponent
+        GestureComponent
             .registerComponent()
     }
     

@@ -26,7 +26,7 @@ public struct GestureComponent: Component, Codable {
     public var preserveOrientationOnPivotDrag: Bool = true
     
     /// A Boolean value that indicates whether a gesture can scale the entity.
-    public var canScale: Bool = true
+    public var canZoom: Bool = true
     
     /// A Boolean value that indicates whether a gesture can rotate the entity.
     public var canRotate: Bool = true
@@ -149,27 +149,34 @@ public struct GestureComponent: Component, Codable {
     /// Handle `.onChanged` actions for magnify (scale)  gestures.
     @MainActor mutating func onChanged(value: EntityTargetValue<MagnifyGesture.Value>) {
         let state = EntityGestureState.shared
-        guard canScale, !state.isDragging else { return }
+        guard canZoom, !state.isDragging else { return }
         
-//        let entity = value.entity
-        var entity = value.entity.parent
-        if (entity == nil) {
-            print("no parent")
-            entity = value.entity
+        let entity = value.entity.parent as! SphereEntity
+        
+        if !state.isZooming {
+            state.isZooming = true
         }
         
-        if !state.isScaling {
-            state.isScaling = true
-            state.startScale = entity!.scale
-        }
+        state.magnification = Float(value.magnification) 
+        print(value.magnification)
         
-        let magnification = Float(value.magnification)
-        entity!.scale = state.startScale * magnification
+        var zoomLevel = entity.zoomLevel
+        //TODO: refine wiederholten zoom
+        if state.magnification > 2.0 {
+            zoomLevel = 2
+        } else if state.magnification > 1.0 {
+            zoomLevel = 1
+        } else {
+            zoomLevel = zoomLevel - 1 //TODO: make more sensitive
+            if(zoomLevel <= 0) { zoomLevel = 0}
+       }
+            
+        entity.updateFlowerTexturesForZoom(zoomTo: zoomLevel)
     }
     
     /// Handle `.onEnded` actions for magnify (scale)  gestures
     @MainActor mutating func onEnded(value: EntityTargetValue<MagnifyGesture.Value>) {
-        EntityGestureState.shared.isScaling = false
+        EntityGestureState.shared.isZooming = false
     }
     
     // MARK: - Rotate Logic
@@ -177,7 +184,7 @@ public struct GestureComponent: Component, Codable {
     /// Handle `.onChanged` actions for rotate  gestures.
     @MainActor mutating func onChanged(value: EntityTargetValue<RotateGesture3D.Value>) {
         let state = EntityGestureState.shared
-        guard canRotate, !state.isDragging, !state.isSelectingImage else { return }
+        guard canRotate, !state.isDragging else { return }
        
         var entity = value.entity.parent
         if (entity == nil) {
