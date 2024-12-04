@@ -158,7 +158,7 @@ public struct GestureComponent: Component, Codable {
         }
         
         state.magnification = Float(value.magnification) 
-        print(value.magnification)
+//        print(value.magnification)
         
         var zoomLevel = entity.zoomLevel
         //TODO: refine wiederholten zoom
