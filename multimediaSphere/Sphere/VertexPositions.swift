@@ -16,8 +16,8 @@ class VertexPositions {
            return instance
        }()
     var resolution: Int = 9 //TODO: change resolution
-    var vertexPositions: [[SIMD3<Float>]] = [] //vertexPositions for all 6 faces
-    var edges: [[[SIMD3<Float>]]] = [] //the vertices of all quads
+    var vertexPositions: [[[SIMD3<Float>]]] = [] //vertexPositions for all 6 faces
+    var faces: [[[[SIMD3<Float>]]]] = [] //the vertices of all quads
 
     let directions: [SIMD3<Float>] = [
         SIMD3<Float>(0, 1, 0),   // up
@@ -32,23 +32,22 @@ class VertexPositions {
         var i: Int = 0; //to know which direction
         for direction in directions {
             let verticesOfFace = self.calculateVerticesForSphereFace(localUp: direction)
-            vertexPositions.append(verticesOfFace)
-            let edgesOfFace = self.calculateEdges(directionIndex: i) //returns array of array of edges
-            edges.append(edgesOfFace)
+            vertexPositions.append(verticesOfFace) //TODO: does orientation make sense?
+            let facesOfSphereFace = self.calculateFaces(directionIndex: i) //returns array of array of edges
+            faces.append(facesOfSphereFace)
             i+=1
         }
     }
     
-    private func calculateVerticesForSphereFace(localUp: SIMD3<Float>) -> [SIMD3<Float>] { //returns a MeshResource for each Image on the sphere
-        let axisA: SIMD3<Float> = SIMD3<Float>(localUp.y, localUp.z, localUp.x) //cyclic permutation (rechtwinklig zu localUp)
-        let axisB: SIMD3<Float> = simd_cross(localUp, axisA) //senkrecht auf localUp and axisA
+    private func calculateVerticesForSphereFace(localUp: SIMD3<Float>) -> [[SIMD3<Float>]] {
+        let axisA: SIMD3<Float> = SIMD3<Float>(localUp.y, localUp.z, localUp.x)
+        let axisB: SIMD3<Float> = simd_cross(localUp, axisA)
         
-        var vertexPositions = [SIMD3<Float>](repeating: .zero, count: self.resolution * self.resolution) //vertex for each "edge" on the sphere
+        var vertexPositions: [[SIMD3<Float>]] = Array(repeating: [], count: resolution)
         
-        for y in 0..<self.resolution { //row
-            for x in 0..<self.resolution { //column
-                let i = x + y * self.resolution //index to store 2d array in linear order. row-major order
-                let percent = SIMD2<Float>(Float(x), Float(y)) / Float(self.resolution - 1) //TODO
+        for y in 0..<self.resolution {
+            for x in 0..<self.resolution {
+                let percent = SIMD2<Float>(Float(x), Float(y)) / Float(self.resolution - 1)
                 
                 let normalizedCoordinateX = (percent.x - 0.5) * 2
                 let normalizedCoordinateY = (percent.y - 0.5) * 2
@@ -59,28 +58,29 @@ class VertexPositions {
                 let pointOnUnitCube = localUp + tangentAOffset + tangentBOffset
                 let pointOnUnitSphere = simd_normalize(pointOnUnitCube)
                 
-                vertexPositions[i] = pointOnUnitSphere
+                vertexPositions[y].append(pointOnUnitSphere)
             }
         }
         return vertexPositions
     }
     
-    private func calculateEdges(directionIndex: Int) -> [[SIMD3<Float>]] {
-        var edgesOfFace: [[SIMD3<Float>]] = []
-        for y in 0..<resolution { //row
-            for x in 0..<resolution { //column
-                let i = x + y * resolution //index to store 2d array in linear order. row-major order
+    private func calculateFaces(directionIndex: Int) -> [[[SIMD3<Float>]]] {
+        var faces: [[[SIMD3<Float>]]] = Array(repeating: [], count: resolution-1)
+        
+        for x in 0..<resolution { //row
+            for y in 0..<resolution { //column
                 guard (x != resolution - 1 && y != resolution - 1) else { continue }
                      
                 let edges: [SIMD3<Float>] = [
-                    vertexPositions[directionIndex][i],
-                    vertexPositions[directionIndex][i + 1],
-                    vertexPositions[directionIndex][i + resolution + 1],
-                    vertexPositions[directionIndex][i + resolution]
+                    vertexPositions[directionIndex][x][y],
+                    vertexPositions[directionIndex][x][y+1],
+                    vertexPositions[directionIndex][x+1][y+1],
+                    vertexPositions[directionIndex][x+1][y]
                 ]
-                edgesOfFace.append(edges)
+                faces[x].append(edges)
             }
         }
-        return edgesOfFace
+        return faces
+        
     }
 }

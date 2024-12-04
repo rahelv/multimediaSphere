@@ -35,18 +35,20 @@ class SphereEntity: Entity {
     // creates array of meshresources containing mesh for every face of the sphere
     private func generateSphereImageEntities(resolution: Int) async throws { //TODO: resolution should be the same everywhere ...
         var directionIndex: Int = 0
-        for direction in vertexPositions.edges {
-            for edges in direction {
-                do {
-                    let imageEntity: ImageEntity = try await ImageEntity.init(vertexPositions: edges, localUp: vertexPositions.directions[directionIndex])
-                    sphereImageEntities.append(imageEntity)
-                    self.addChild(imageEntity)
-                } catch {
-                    print("Failed to create mesh resource: \(error.localizedDescription)") //TODO: evtl. better error handling + why are there empty arrays ???
+        for face in vertexPositions.faces {
+            for x in face.indices {
+                for y in face[0].indices {
+                    do {
+                        let imageEntity: ImageEntity = try await ImageEntity.init(vertexPositions: face[x][y], localUp: vertexPositions.directions[directionIndex])
+                        sphereImageEntities.append(imageEntity)
+                        self.addChild(imageEntity)
+                    } catch {
+                        print("Failed to create mesh resource: \(error.localizedDescription)") //TODO: evtl. better error handling + why are there empty arrays ???
+                    }
                 }
             }
-            directionIndex+=1
         }
+        directionIndex+=1
     }
     
     func addHoverToChildEntities() async {
