@@ -9,24 +9,15 @@ import Foundation
 import RealityFoundation
 import RealityKitContent
 
-enum positionIdentifier {
-    case topright
-    case topleft
-    case bottomright
-    case bottomleft
-    
-    case triangletop
-    case trianglebottomright
-    case trianglebottomleft
-}
+
 
 class ImageEntity: Entity {
     var modelEntity: ModelEntity?
     var meshResource: MeshResource?
     var vertexPositions: [SIMD3<Float>]
-    var positionalIdentifier: positionIdentifier
+    var positionalIdentifier: PositionIdentifier
     
-    init(vertexPositions: [SIMD3<Float>], positionalIdentifier: positionIdentifier) async throws {
+    init(vertexPositions: [SIMD3<Float>], positionalIdentifier: PositionIdentifier) async throws {
         self.vertexPositions = vertexPositions
         self.positionalIdentifier = positionalIdentifier
         super.init()
@@ -82,51 +73,76 @@ class ImageEntity: Entity {
            return descriptor
     }
     
-    func transformTextureCoordinates(material: NamedMaterial) {
-        var newMaterial = material.material
+    func transformTextureCoordinates(material: NamedMaterial, zoomLevel: Int) {
+        var newMaterial = material
         
-        switch positionalIdentifier {
-        case .bottomright:
-            newMaterial.textureCoordinateTransform = .init(
-                offset: [0, 0],
-                scale: [0.5, 0.5],
-                rotation: 0
-            )
-        case .bottomleft:
-            newMaterial.textureCoordinateTransform = .init(
-                offset: [0.5, 0],      // Shift the coordinates, move the origin to the middle
-                scale: [0.5, 0.5],       // Scale the texture coordinates, shrinking it to fit the new space
-                rotation: 0              // No rotation, or apply the desired rotation in radians
-            )
-        case .topright:
-            newMaterial.textureCoordinateTransform = .init(
-                offset: [0, 0.5],      // Shift the coordinates, move the origin to the middle
-                scale: [0.5, 0.5],       // Scale the texture coordinates, shrinking it to fit the new space
-                rotation: 0              // No rotation, or apply the desired rotation in radians
-            )
-        case .topleft:
-            newMaterial.textureCoordinateTransform = .init(
-                offset: [0.5, 0.5],      // Shift the coordinates, move the origin to the middle
-                scale: [0.5, 0.5],       // Scale the texture coordinates, shrinking it to fit the new space
-                rotation: 0              // No rotation, or apply the desired rotation in radians
-            )
-        case .triangletop:
-            newMaterial.textureCoordinateTransform = .init(
-                offset: [0.5, 0.5],      // Shift the coordinates, move the origin to the middle
-                scale: [0.5, 0.5],       // Scale the texture coordinates, shrinking it to fit the new space
-                rotation: 0              // No rotation, or apply the desired rotation in radians
-            )
-
-        default: //TODO: handle triangles
-            newMaterial.textureCoordinateTransform = .init(
-                offset: [0, 0],      // Shift the coordinates, move the origin to the middle
-                scale: [0.5, 0.5],       // Scale the texture coordinates, shrinking it to fit the new space
-                rotation: 0              // No rotation, or apply the desired rotation in radians
-            )
-            break
+        if (zoomLevel == 0) {
+            switch positionalIdentifier {
+                case .bottomleft_topleft, .bottomright_topleft, .topleft_topleft, .topright_topleft:
+                    newMaterial.zoomTexture(inputOffset: [0, 0], inputScale: [0.5, 0.5])
+                case .bottomleft_topright, .bottomright_topright, .topleft_topright, .topright_topright:
+                    newMaterial.zoomTexture(inputOffset: [0.5, 0], inputScale: [0.5, 0.5])
+                case  .bottomleft_bottomleft, .bottomright_bottomleft, .topleft_bottomleft, .topright_bottomleft:
+                    newMaterial.zoomTexture(inputOffset: [0, 0.5], inputScale: [0.5, 0.5])
+                case .bottomleft_bottomright, .bottomright_bottomright, .topleft_bottomright, .topright_bottomright:
+                    newMaterial.zoomTexture(inputOffset: [0.5, 0.5], inputScale: [0.5, 0.5])
+                case .triangletop:
+                    newMaterial.zoomTexture(inputOffset: [0.5, 0.5], inputScale: [0.5, 0.5])
+                default: //TODO: handle triangles
+                    newMaterial.zoomTexture(inputOffset: [0, 0], inputScale: [0.5, 0.5])
+                    break
+            }
         }
-            self.name = material.name
-            self.modelEntity?.model?.materials = [newMaterial]
+        if (zoomLevel == 1) {
+            switch positionalIdentifier {
+                
+            case .topleft_topleft:
+                newMaterial.zoomTexture(inputOffset: [0, 0], inputScale: [0.25, 0.25])
+            case .topleft_topright:
+                newMaterial.zoomTexture(inputOffset: [0.25, 0], inputScale: [0.25, 0.25])
+            case .topright_topleft:
+                newMaterial.zoomTexture(inputOffset: [0.5, 0], inputScale: [0.25, 0.25])
+            case .topright_topright:
+                newMaterial.zoomTexture(inputOffset: [0.75, 0], inputScale: [0.25, 0.25])
+               
+            case .topleft_bottomleft:
+                newMaterial.zoomTexture(inputOffset: [0, 0.25], inputScale: [0.25, 0.25])
+            case .topleft_bottomright:
+                newMaterial.zoomTexture(inputOffset: [0.25, 0.25], inputScale: [0.25, 0.25])
+            case .topright_bottomleft:
+                newMaterial.zoomTexture(inputOffset: [0.5, 0.25], inputScale: [0.25, 0.25])
+            case .topright_bottomright:
+                newMaterial.zoomTexture(inputOffset: [0.75, 0.25], inputScale: [0.25, 0.25])
+                
+            case .bottomleft_topleft:
+                newMaterial.zoomTexture(inputOffset: [0, 0.5], inputScale: [0.25, 0.25])
+            case .bottomleft_topright:
+                newMaterial.zoomTexture(inputOffset: [0.25, 0.5], inputScale: [0.25, 0.25])
+            case .bottomright_topleft:
+                newMaterial.zoomTexture(inputOffset: [0.5, 0.5], inputScale: [0.25, 0.25])
+            case .bottomright_topright:
+                newMaterial.zoomTexture(inputOffset: [0.75, 0.5], inputScale: [0.25, 0.25])
+                
+            case .bottomleft_bottomleft:
+                newMaterial.zoomTexture(inputOffset: [0, 0.75], inputScale: [0.25, 0.25])
+            case .bottomleft_bottomright:
+                newMaterial.zoomTexture(inputOffset: [0.25, 0.75], inputScale: [0.25, 0.25])
+            case .bottomright_bottomleft:
+                newMaterial.zoomTexture(inputOffset: [0.5, 0.75], inputScale: [0.25, 0.25])
+            case .bottomright_bottomright:
+                newMaterial.zoomTexture(inputOffset: [0.75, 0.75], inputScale: [0.25, 0.25])
+                
+            case .triangletop:
+                newMaterial.zoomTexture(inputOffset: [0.5, 0.5], inputScale: [0.25, 0.25])
+            default:
+                // TODO: Handle triangles or other custom cases
+                newMaterial.zoomTexture(inputOffset: [0, 0], inputScale: [0.25, 0.25])
+                break
+            }
+        }
+        
+        self.name = material.name
+        self.modelEntity?.model?.materials = [newMaterial.material]
         }
         
         func addHover() async {
@@ -153,5 +169,10 @@ class ImageEntity: Entity {
         func updateTexture(material: PhysicallyBasedMaterial) {
             // Apply the material to the model of the entity.
             self.modelEntity!.model?.materials = [material]
+        }
+    
+        func getMaterial() -> NamedMaterial {
+            let namedMaterial = NamedMaterial(name: self.name, material: self.modelEntity!.model?.materials[0] as! PhysicallyBasedMaterial)
+            return namedMaterial
         }
     }

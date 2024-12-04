@@ -8,7 +8,7 @@ struct SphereView: View {
     @State private var root: Entity = Entity()
     @State private var selectedImageName: String? // Holds the selected image name
     @State private var isSelectingImage: Bool = false
-    @State private var toggleZoom: Bool = false
+    @State private var zoomLevel: Int = 0
     @ObservedObject private var state = EntityGestureState.shared
     
     let session = ARKitSession()
@@ -23,7 +23,7 @@ struct SphereView: View {
                 }
                 
                 do {
-                    let sphereEntity = try await SphereEntity(resolution: 9) // Customize resolution
+                    let sphereEntity = try await SphereEntity(param: 1) 
                     await sphereEntity.addHoverToChildEntities()
                     sphereEntity.position = [0, 1.5, -3.0] // centered in front of the user at eye level
                     root.addChild(sphereEntity)
@@ -56,7 +56,6 @@ struct SphereView: View {
 
                 // Set the new position of the attachmentEntity relative to the sphereEntity
                 attachmentEntity.setPosition(localPosition, relativeTo: sphereEntity)
-                print("------")
             }
             attachments: {
                 Attachment(id: "singleImageAttachment") {
@@ -84,6 +83,7 @@ struct SphereView: View {
                 SpatialTapGesture()
                     .targetedToAnyEntity()
                     .onEnded { value in
+                        let sel_ent = value.entity as! ImageEntity
                         selectedImageName = value.entity.name
                         state.isSelectingImage = true
                         isSelectingImage = true
@@ -94,22 +94,17 @@ struct SphereView: View {
                     TapGesture(count: 2)
                         .targetedToAnyEntity()
                         .onEnded { value in
-                            if (toggleZoom) {
-                                //to make sure view is closed
-                                state.isSelectingImage = false
-                                isSelectingImage = false
-                                
+                            switch zoomLevel {
+                            case 0, 1:
                                 let sphereEntity = root.children[0] as! SphereEntity
-                                sphereEntity.updateFlowerTexturesForZoom()
-                                toggleZoom = false
-                            } else {
-                                //to make sure view is closed
-                                state.isSelectingImage = false
-                                isSelectingImage = false
-                                
+                                sphereEntity.updateFlowerTexturesForZoom(zoomLevel: self.zoomLevel)
+                                zoomLevel = zoomLevel + 1
+                            case 2:
                                 let sphereEntity = root.children[0] as! SphereEntity
                                 sphereEntity.updateFlowerTextures()
-                                toggleZoom = true
+                                zoomLevel = 0
+                            default:
+                                print("TODO")
                             }
                         }
             )

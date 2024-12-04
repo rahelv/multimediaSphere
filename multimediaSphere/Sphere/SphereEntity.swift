@@ -12,13 +12,11 @@ import Foundation
 
 @MainActor
 class SphereEntity: Entity {
-    var resolution: Int
     let vertexPositions = VertexPositions.shared
-    var sphereImageEntities: [ImageEntity] = [] //entity for each image on the sphere
+    var sphereImageEntities: [[ImageEntity]] = Array(repeating: [], count: 28) //entity for each image on the sphere
     var materials: [NamedMaterial] = []
     
-    init(resolution: Int = 9) async throws { //TODO: change resolution
-        self.resolution = resolution
+    init(param: Int) async throws {
         super.init()
         try await self.initialize()
     }
@@ -28,29 +26,34 @@ class SphereEntity: Entity {
     }
     
     private func initialize() async throws {
-        try await self.generateSphereImageEntities(resolution: self.resolution)
+        try await self.generateSphereImageEntities()
         //        await self.updateTextures()
         await self.generateFlowerTextures()
         self.updateFlowerTextures()
     }
     
     // creates array of meshresources containing mesh for every face of the sphere
-    private func generateSphereImageEntities(resolution: Int) async throws { //TODO: resolution should be the same everywhere ...
-        for faces in vertexPositions.faces {
-            do {
-                let imageEntity: ImageEntity = try await ImageEntity.init(vertexPositions: faces.vertices, positionalIdentifier: faces.position)
-                sphereImageEntities.append(imageEntity)
-                self.addChild(imageEntity)
-            } catch {
-                print("Failed to create mesh resource: \(error.localizedDescription)") //TODO: evtl. better error handling + why are there empty arrays ???
+    private func generateSphereImageEntities() async throws {
+        for (index, row) in vertexPositions.faces.enumerated() {
+            for face in row {
+                do {
+                    let imageEntity: ImageEntity = try await ImageEntity.init(vertexPositions: face.vertices, positionalIdentifier: face.position)
+                    sphereImageEntities[index].append(imageEntity)
+                    self.addChild(imageEntity)
+                } catch {
+                    print("Failed to create mesh resource: \(error.localizedDescription)") //TODO: evtl. better error handling + why are there empty arrays ???
+                }
+
             }
         }
     }
         
         func addHoverToChildEntities() async {
-            for entity in sphereImageEntities {
-                await entity.addHover()
-                entity.addGestures()
+            for row in sphereImageEntities {
+                for entity in row {
+                    await entity.addHover()
+                    entity.addGestures()
+                }
             }
         }
         
@@ -62,21 +65,23 @@ class SphereEntity: Entity {
             
             // Loop to load textures dynamically
             var counter: Int = 1
-            for entity in sphereImageEntities {
-                if (counter > imageCount) {
-                    //get new random folder
-                    randomFolder = imageGenerator.generateRandomFolder()
-                    imageCount = await imageGenerator.countImagesInDirectory(url: URL(string: baseURL + randomFolder + "/")!)
-                    counter = 1
-                }
-                let textureURL = URL(string: baseURL + randomFolder + "/" + randomFolder + String(format: "_%d.jpg", counter))
-                counter+=1
-                imageGenerator.createMaterialAsync(textureURL!) { material in
-                    if let material = material {
-                        //change texture of entity
-                        entity.updateTexture(material: material)
-                    } else {
-                        print("Failed to load texture.")
+            for row in sphereImageEntities {
+                for entity in row {
+                    if (counter > imageCount) {
+                        //get new random folder
+                        randomFolder = imageGenerator.generateRandomFolder()
+                        imageCount = await imageGenerator.countImagesInDirectory(url: URL(string: baseURL + randomFolder + "/")!)
+                        counter = 1
+                    }
+                    let textureURL = URL(string: baseURL + randomFolder + "/" + randomFolder + String(format: "_%d.jpg", counter))
+                    counter+=1
+                    imageGenerator.createMaterialAsync(textureURL!) { material in
+                        if let material = material {
+                            //change texture of entity
+                            entity.updateTexture(material: material)
+                        } else {
+                            print("Failed to load texture.")
+                        }
                     }
                 }
             }
@@ -84,48 +89,60 @@ class SphereEntity: Entity {
         
         func generateFlowerTextures() async { //TODO: move function to ImageMaterialGenerator
             let imageGenerator = ImageMaterialGenerator()
-            materials = imageGenerator.generateFlowerMaterials(count: Double(sphereImageEntities.count))
+            materials = imageGenerator.generateFlowerMaterials(count: Double(sphereImageEntities.count*sphereImageEntities.count))
         }
     
         func updateFlowerTextures() {
             var index = 0
             // Loop to load textures dynamically
-            for entity in sphereImageEntities {
-                entity.updateTexture(material: materials[index].material)
-                entity.name = materials[index].name
-                index+=1
+            for row in sphereImageEntities {
+                for entity in row {
+                    entity.updateTexture(material: materials[index].material)
+                    entity.name = materials[index].name
+                    index+=1
+                }
             }
         }
     
-        func updateFlowerTexturesForZoom() {
-            var startIndex = 0
-            var materialCount = 1
-            while startIndex <= 840 {
-                for columnCount in stride(from: 0, to: 30, by: 2) { //immer zwei cols miteinander
+    func updateFlowerTexturesForZoom(zoomLevel: Int) {
+        var materialCount = 1;
+        if (zoomLevel == 0) {
+            for row in stride(from: 3, through: vertexPositions.resolution-1, by: 2) {
+                for col in stride(from: 0, to: vertexPositions.resolution, by: 2) {
                     let material = materials[materialCount]
-                    if (startIndex  <= 30) {
-                        sphereImageEntities[startIndex + columnCount].transformTextureCoordinates(material: material)
-                        sphereImageEntities[startIndex + columnCount + 2].transformTextureCoordinates(material: material)
-                        sphereImageEntities[startIndex + columnCount + 60].transformTextureCoordinates(material: material)
-                        sphereImageEntities[startIndex + columnCount + 60 + 2].transformTextureCoordinates(material: material) //TODO: something here is still not correct
-                        
-                        sphereImageEntities[startIndex + columnCount + 840].transformTextureCoordinates(material: material)
-                        sphereImageEntities[startIndex + columnCount + 1 + 840].transformTextureCoordinates(material: material)
-                        sphereImageEntities[startIndex + columnCount + 870].transformTextureCoordinates(material: material)
-                        sphereImageEntities[startIndex + columnCount + 1 + 870].transformTextureCoordinates(material: material) //TODO: something here is still not correct
-                    } else {
-                        let material = materials[materialCount]
-                        sphereImageEntities[startIndex + columnCount].transformTextureCoordinates(material: material)
-                        sphereImageEntities[startIndex + columnCount + 1].transformTextureCoordinates(material: material)
-                        sphereImageEntities[startIndex + columnCount + 30].transformTextureCoordinates(material: material)
-                        sphereImageEntities[startIndex + columnCount + 30 + 1].transformTextureCoordinates(material: material)
-                    }
+                    sphereImageEntities[row][col].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row][col+1].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row-1][col].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row-1][col+1].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
                     materialCount = materialCount + 1
                 }
-                if (startIndex  <= 30) {
-                    startIndex = startIndex + 30
+            }
+        } else if (zoomLevel == 1) {
+            for row in stride(from: 3, through: vertexPositions.resolution-1, by: 4) {
+                for col in stride(from: 0, to: vertexPositions.resolution, by: 4) {
+                    let material =  materials[materialCount]
+                    sphereImageEntities[row][col].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row][col+1].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row][col+2].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row][col+3].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    
+                    sphereImageEntities[row-1][col].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row-1][col+1].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row-1][col+2].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row-1][col+3].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    
+                    sphereImageEntities[row-2][col].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row-2][col+1].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row-2][col+2].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row-2][col+3].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    
+                    sphereImageEntities[row-3][col].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row-3][col+1].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row-3][col+2].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    sphereImageEntities[row-3][col+3].transformTextureCoordinates(material: material, zoomLevel: zoomLevel)
+                    materialCount = materialCount + 1
                 }
-                startIndex = startIndex + 60
             }
         }
     }
+}
