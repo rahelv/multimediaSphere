@@ -42,8 +42,12 @@ public class EntityGestureState: ObservableObject {
     
     //MARK: - SpatialTap
     
+    @Published
     var isSelectingImage = false
     
+    @Published
+    var selectedImageName: String? // Holds the selected image name
+
     // MARK: - Singleton Accessor
     
     /// Retrieves the shared instance.

@@ -13,9 +13,6 @@ import SwiftUI
 /// A component that handles gesture logic for an entity.
 public struct GestureComponent: Component, Codable {
     
-    /// A Boolean value that indicates whether a gesture can drag the entity.
-    public var canDrag: Bool = true
-    
     /// A Boolean value that indicates whether a dragging can move the object in an arc, similar to dragging windows or moving the keyboard.
     public var pivotOnDrag: Bool = true
     
@@ -25,21 +22,12 @@ public struct GestureComponent: Component, Codable {
     /// The property only applies when `pivotOnDrag` is `true`.
     public var preserveOrientationOnPivotDrag: Bool = true
     
-    /// A Boolean value that indicates whether a gesture can scale the entity.
-    public var canZoom: Bool = true
-    
-    /// A Boolean value that indicates whether a gesture can rotate the entity.
-    public var canRotate: Bool = true
-    
-    public var canTap: Bool = true
-    
     public init() {}
     
     // MARK: - Drag Logic
     
     /// Handle `.onChanged` actions for drag gestures.
     @MainActor mutating func onChanged(value: EntityTargetValue<DragGesture.Value>) {
-        guard canDrag else { return }
         
         let state = EntityGestureState.shared
         
@@ -149,7 +137,7 @@ public struct GestureComponent: Component, Codable {
     /// Handle `.onChanged` actions for magnify (scale)  gestures.
     @MainActor mutating func onChanged(value: EntityTargetValue<MagnifyGesture.Value>) {
         let state = EntityGestureState.shared
-        guard canZoom, !state.isDragging else { return }
+        guard !state.isDragging else { return }
         
         let entity = value.entity.parent as! SphereEntity
         
@@ -184,7 +172,7 @@ public struct GestureComponent: Component, Codable {
     /// Handle `.onChanged` actions for rotate  gestures.
     @MainActor mutating func onChanged(value: EntityTargetValue<RotateGesture3D.Value>) {
         let state = EntityGestureState.shared
-        guard canRotate, !state.isDragging else { return }
+        guard !state.isDragging else { return }
        
         var entity = value.entity.parent
         if (entity == nil) {
@@ -212,18 +200,17 @@ public struct GestureComponent: Component, Codable {
     
     
 //    // MARK: - Spatial Tap Logic
-//    
-//    /// Handle `.onChanged` actions for tap  gestures.
-//    @MainActor mutating func onChanged(value: EntityTargetValue<SpatialTapGesture.Value>) {
-//        let state = EntityGestureState.shared
-//        guard canTap, !state.isDragging else { return }
-//    }
-//    
-//    /// Handle `.onEnded` actions for tap gestures
-//    @MainActor mutating func onEnded(value: EntityTargetValue<SpatialTapGesture.Value>) {
-//        let name = value.entity.name
-//        print("tap ended on \(name)")
-//        
-//        //TODO: open new view with the image named value.entity.name
-//    }
+    
+    /// Handle `.onChanged` actions for tap  gestures.
+    @MainActor mutating func onChanged(value: EntityTargetValue<SpatialTapGesture.Value>) {
+        let state = EntityGestureState.shared
+        guard !state.isDragging else { return }
+    }
+    
+    /// Handle `.onEnded` actions for tap gestures
+    @MainActor mutating func onEnded(value: EntityTargetValue<SpatialTapGesture.Value>) {
+        let state = EntityGestureState.shared
+        state.selectedImageName = value.entity.name
+        state.isSelectingImage = true
+    }
 }

@@ -57,6 +57,31 @@ public extension Gesture where Value == EntityTargetValue<DragGesture.Value> {
     }
 }
 
+// MARK: - Spatial Tap -
+
+/// Gesture extension to support spatial tap gestures.
+public extension Gesture where Value == EntityTargetValue<SpatialTapGesture.Value> {
+    
+    /// Connects the gesture input to the `GestureComponent` code.
+    func useGestureComponent() -> some Gesture {
+        onChanged { value in
+            guard var gestureComponent = value.entity.gestureComponent else { return }
+            
+            gestureComponent.onChanged(value: value)
+            
+            value.entity.components.set(gestureComponent)
+        }
+        .onEnded { value in
+            guard var gestureComponent = value.entity.gestureComponent else { return }
+            
+            gestureComponent.onEnded(value: value)
+            
+            value.entity.components.set(gestureComponent)
+        }
+    }
+}
+
+
 // MARK: - Magnify (Scale) -
 
 /// Gesture extension to support scale gestures.
