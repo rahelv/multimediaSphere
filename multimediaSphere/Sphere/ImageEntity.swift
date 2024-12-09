@@ -27,11 +27,11 @@ class ImageEntity: Entity {
     
     private func initialize() async throws {
         var descriptor: MeshDescriptor
-               if vertexPositions.count == 3 {
-                   descriptor = self.createDescriptorTriangle(vertexPositions: vertexPositions)
-               } else {
-                   descriptor = self.createDescriptorQuad(vertexPositions: vertexPositions)
-               }
+        if vertexPositions.count == 3 {
+            descriptor = self.createDescriptorTriangle(vertexPositions: vertexPositions)
+        } else {
+            descriptor = self.createDescriptorQuad(vertexPositions: vertexPositions)
+        }
         let meshResource = try MeshResource.generate(from: [descriptor])
         self.meshResource = meshResource
         var material = PhysicallyBasedMaterial()
@@ -156,10 +156,6 @@ class ImageEntity: Entity {
         
         func addGestures() {
             var component = GestureComponent()
-            component.canDrag = true
-            component.canZoom = true
-            component.canRotate = true
-            component.canTap = true
             self.components.set(component)
         }
         

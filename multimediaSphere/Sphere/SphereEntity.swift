@@ -57,7 +57,7 @@ class SphereEntity: Entity {
             }
         }
         
-        func updateTextures() async { //TODO: move function to ImageMaterialGenerator
+        func updateTextures() async {
             let imageGenerator = ImageMaterialGenerator()
             let baseURL = "https://v3c.xreco-retrieval.ch/v3c/thumbnails/"
             var randomFolder = imageGenerator.generateRandomFolder()
