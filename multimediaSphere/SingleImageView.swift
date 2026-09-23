@@ -2,7 +2,6 @@
 //  SingleImageView.swift
 //  multimediaSphere
 //
-//  Created by Rahel Kempf on 27.11.2024.
 //
 
 import SwiftUI

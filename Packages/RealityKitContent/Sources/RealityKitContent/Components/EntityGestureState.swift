@@ -2,7 +2,6 @@
 //  EntityGestureState.swift
 //  RealityKitContent
 //
-//  Created by Rahel Kempf on 09.11.2024.
 //
 
 import RealityKit

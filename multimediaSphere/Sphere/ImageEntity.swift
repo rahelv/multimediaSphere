@@ -2,7 +2,6 @@
 //  ImageEntity.swift
 //  multimediaSphere
 //
-//  Created by Rahel Kempf on 09.11.2024.
 //
 
 import Foundation

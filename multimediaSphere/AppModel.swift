@@ -2,7 +2,6 @@
 //  AppModel.swift
 //  multimediaSphere
 //
-//  Created by Rahel Kempf on 11.10.2024.
 //
 
 import SwiftUI

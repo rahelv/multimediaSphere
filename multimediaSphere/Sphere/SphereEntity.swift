@@ -2,7 +2,6 @@
 //  SphereEntity.swift
 //  multimediaSphere
 //
-//  Created by Rahel Kempf on 31.10.2024.
 //
 
 import RealityFoundation
